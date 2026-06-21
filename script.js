@@ -1,80 +1,73 @@
-console.log("- Welcome to Rock Paper Scissors -");
-
-const choices = ['rock', 'paper', 'scissors'];
+const validChoices = ['rock', 'paper', 'scissors'];
+const imgs = document.querySelectorAll('.human-choice');
+const humanScoreDisplay = document.querySelector('.human-score');
+const computerScoreDisplay = document.querySelector('.computer-score');
+const resultDisplay = document.querySelector('.result-display');
+const rounds = 5
+let humanScore = 0
+let computerScore = 0
+humanScoreDisplay.textContent = `${humanScore}`;
+computerScoreDisplay.textContent = `${computerScore}`;
 
 // returns a random choice from the choices 
-const getComputerChoice = function() {
-    return choices[Math.floor(Math.random() * choices.length)];
+const getComputerChoice = function () {
+    return validChoices[Math.floor(Math.random() * validChoices.length)];
 };
 
-// prompts the user input then returns it
-const getHumanChoice = function() {
-    return prompt("Choose Rock / Paper / Scissors: ").toLowerCase();
-};
-
-const playGame = function(rounds) {
-    let humanScore  = 0;
-    let computerScore = 0;
-
-    // takes human and computer choice and updates score accordingly
-    const playRound = function(humanChoice, computerChoice) {
-        if (humanChoice === computerChoice) {
-            console.log("That's a tie!");
-            return;
-        }
-
-        if (humanChoice === 'rock') {
-            if (computerChoice === 'scissors') {
-                humanScore++;
-                console.log("You Win! Rock beats Scissors.");
-            }
-            else {
-                computerScore++;
-                console.log("You Lose! Paper beats Rock.");
-            }
-        }
-    
-        else if (humanChoice === 'paper') {
-            if (computerChoice === 'rock') {
-                humanScore++;
-                console.log("You Win! Paper beats Rock.");
-            }
-            else {
-                computerScore++;
-                console.log("You Lose! Scissors beats Paper.");
-            }
-        }
-    
-        else {
-            if (computerChoice === 'Paper') {
-                humanScore++;
-                console.log("You Win! Scissors beats Paper.");
-            }
-            else {
-                computerScore++;
-                console.log("You Lose! Rock beats Scissors.");
-            }
-        }
-    };
-
-    // repeats for the number of given rounds
-    for (let i = 1; i <= rounds; i++){
-        console.log("Start Round " + i);
-        const humanChoice = getHumanChoice();
-        const computerChoice = getComputerChoice();
-        
-        playRound(humanChoice, computerChoice);
+// plays a round and updates score displays
+const playRound = function (humanChoice) {
+    const computerChoice = getComputerChoice();
+    let result = "";
+    if (!validChoices.includes(humanChoice)) {
+        result = "invalid! please choose a valid move"
+        resultDisplay.textContent = result;
+        return
+    }
+    if (humanChoice === computerChoice) {
+        result = `Tie! You both selected ${humanChoice}`;
     }
 
-    if (humanScore > computerScore) {
-        alert("You Won! you beat the computer.");
-    }
-    else if (humanScore < computerScore) {
-        alert("You Lost! get better.");
+    else if ((humanChoice === 'rock' && computerChoice === 'scissors') ||
+        (humanChoice === 'scissors' && computerChoice === 'paper') ||
+        (humanChoice === 'paper' && computerChoice === 'rock')) {
+        humanScore++;
+        result = `You Win! ${humanChoice} beats ${computerChoice}.`;
     }
     else {
-        alert("It was a tie!");
+        computerScore++;
+        result = `You Lose! ${computerChoice} beats ${humanChoice}.`;
     }
+
+    if (humanScore === rounds || computerScore === rounds) {
+        imgs.forEach(img => img.removeEventListener('click', handleClick));
+        const finalResult = document.createElement('p');
+        finalResult.style['fontWeight'] = 'bold';
+        const scoreBoard = document.querySelector('.score-board') 
+        const note = document.createElement('h6');
+        note.textContent = 'Reload the page to reset';
+        note.style['color'] = 'red';
+        
+        if (humanScore === rounds) {
+            finalResult.textContent = 'Good Job!!';
+        }
+        else {
+            finalResult.textContent = 'Better Luck next time :('
+        }
+
+        scoreBoard.insertBefore(finalResult, resultDisplay);
+        scoreBoard.appendChild(note);
+    }
+    humanScoreDisplay.textContent = humanScore;
+    computerScoreDisplay.textContent = computerScore;
+    resultDisplay.textContent = result;
+}
+
+const handleClick = function (event) {
+    const choice = this.src.toLowerCase().split('/').pop().replace('.jpg', '').replace('.png', '');
+    playRound(choice);
 };
 
-playGame(5);
+imgs.forEach(img => {
+    img.addEventListener('click', handleClick);
+});
+
